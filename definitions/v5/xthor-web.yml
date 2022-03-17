@@ -104,6 +104,7 @@ login:
   inputs:
     username: "{{ .Config.username }}"
     password: "{{ .Config.password }}"
+    login: "X"
   selectorinputs:
     __RequestVerificationToken:
       selector: input[name="__RequestVerificationToken"]
