@@ -105,20 +105,16 @@ login:
     username: "{{ .Config.username }}"
     password: "{{ .Config.password }}"
     login: "X"
-  selectorinputs:
-    __RequestVerificationToken:
-      selector: input[name="__RequestVerificationToken"]
-      attribute: value
   error:
-    - selector: span.text-danger.validation-summary-errors > span
+    - selector: table.main.embedded.text
       message:
-        text: " - Bad username/password."
+        text: "Pseudo ou mot de passe invalide."
   test:
-    path: /
+    path: browse.php
 
 search:
   paths:
-    - path: Torrent
+    - path: browse.php
   inputs:
     $raw: "{{ range .Categories }}SelectedCats={{.}}&{{end}}"
     search: "{{ .Keywords }}"
