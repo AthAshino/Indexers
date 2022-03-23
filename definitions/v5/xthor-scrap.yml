@@ -98,7 +98,7 @@ settings:
     label: Password
   - name: accent
     type: select
-    label: Sort requested from site
+    label: Specific language
     default: 0
     options:
       0: "All Voices (default)"
