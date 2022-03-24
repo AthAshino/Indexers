@@ -7,10 +7,9 @@ type: private
 encoding: UTF-8
 followredirect: true
 allowdownloadredirect: false
+protocol: torrent
 links:
-  - https://xthor.tk
-legacylinks:
-  - https://xthor.to
+  - https://xthor.tk/
 
 caps:
   categorymappings:
@@ -96,7 +95,7 @@ settings:
   - name: password
     type: password
     label: Password
-  - name: accent
+  - name: accent_id
     type: select
     label: Specific language
     default: 0
@@ -104,6 +103,7 @@ settings:
       0: "All Voices (default)"
       1: "Françaises"
       2: "Quebecoises"
+      47: "Françaises et Québécoises"
       3: "Anglaises"
       4: "Japonaises"
       5: "Espagnoles"
@@ -148,8 +148,22 @@ settings:
       44: "Catalanes"
       45: "Tchèques"
       46: "Afrikaans"
-      47: "Françaises et Québécoises"
-
+  - name: info
+    type: info
+    label: Accent Note
+    default: "You can scope your searches with a specific language / accent."
+  - name: only_freeleech
+    type: checkbox
+    label: Only grab freeleech torrents
+    default: false
+  - name: multilanguage
+    type: text
+    label: Replace MULTI by this word
+    default: MULTI
+  - name: subfrench
+    type: text
+    label: Replace "VOSTFR" and "SUBFRENCH" by this word
+    default:
 
 
 login:
@@ -171,29 +185,32 @@ login:
 
 
 search:
-  - path: browse.php
-      sch: "{{ .Keywords }}"
-      searchin: title
-      incldead: 0
-      group: 0
-      state: 0
-      accent: 0
-      price: 0
-      mqr: 0
-      staff: 0
+  paths:
+    - path: browse.php
+  inputs:
+    sch: "{{ .Keywords }}"
+    searchin: title
+    incldead: 0
+    group: 0
+    state: 0
+    accent: {{ .Config.accent_id }}
+    price: 0
+    mqr: 0
+    staff: 0
+    only_free: "{{ if .Config.only_freeleech }}1{{ else }}0{{ end }}"
 
   rows:
     selector: tbody > tr.trtor
 
   fields:
     category:
-      selector: a[href^="/Torrent?SelectedCats="]
+      selector: a[href^="browser.php?cat="]
       attribute: href
       filters:
         - name: querystring
-          args: SelectedCats
+          args: cat
     title_phase1:
-      selector: td.grid-release-column > a
+      selector: a[href^="details.php?id="]
     title_multilanguage:
       text: "{{ .Result.title_phase1 }}"
       filters:
@@ -211,25 +228,25 @@ search:
     title:
       text: "{{ if .Config.subfrench }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
     download:
-      selector: a[href^="/Torrent/Download?ReleaseId="]
+      selector: a[href^="download.php?torrent="]
       attribute: href
     details:
-      selector: a[href^="/Torrent/Details?ReleaseId="]
+      selector: a[href^="details.php?id="]
       attribute: href
     size:
-      selector: td:nth-child(6)
+      selector: a[href^="download.php?torrent="]
       filters:
-        - name: re_replace
-          args: [ ",", "." ]
         - name: replace
-          args: [ "o", "B" ]
+          args: [ "io", "B" ]
+    grabs:
+      selector: a[href=^"gang.php?tid="]
     seeders:
-      selector: td:nth-child(7)
+      selector: a[href^="peerlist_xbt.php?id="]
     leechers:
-      selector: td:nth-child(8)
+      selector: font[style="color:#2E64FE;"]
     downloadvolumefactor:
       case:
-        img[title="Freeleech"]: 0
+        img[src="./pic/freedownload.gif"]: 0
         "*": 1
     uploadvolumefactor:
       case:
