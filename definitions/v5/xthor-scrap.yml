@@ -7,9 +7,8 @@ type: private
 encoding: UTF-8
 followredirect: true
 allowdownloadredirect: false
-protocol: torrent
 links:
-  - https://xthor.tk/
+  - https://xthor.tk
 
 caps:
   categorymappings:
@@ -84,7 +83,7 @@ caps:
 
   modes:
     search: [ q ]
-    movie-search: [ q, tmdbid ]
+    movie-search: [ q ]
     tv-search: [ q, season, ep ]
     book-search: [ q ]
 
@@ -183,34 +182,32 @@ login:
     path: browse.php
     selector: tr.trtor
 
-
 search:
   paths:
     - path: browse.php
-  inputs:
-    sch: "{{ .Keywords }}"
-    searchin: title
-    incldead: 0
-    group: 0
-    state: 0
-    accent: {{ .Config.accent_id }}
-    price: 0
-    mqr: 0
-    staff: 0
-    only_free: "{{ if .Config.only_freeleech }}1{{ else }}0{{ end }}"
-
+      inputs:
+          sch: "{{ .Keywords }}"
+          searchin: title
+          incldead: 0
+          group: 0
+          state: 0
+          accent: "{{ .Config.accent_id }}"
+          price: 0
+          mqr: 0
+          staff: 0
+          only_free: "{{ if .Config.only_freeleech }}1{{ else }}0{{ end }}"
   rows:
-    selector: tbody > tr.trtor
+    selector: tbody > tr.trtor:has(td.tdtor > a[href^="browse.php?cat="])
 
   fields:
     category:
-      selector: a[href^="browser.php?cat="]
+      selector: a[href^="browse.php?cat="]
       attribute: href
       filters:
         - name: querystring
           args: cat
     title_phase1:
-      selector: a[href^="details.php?id="]
+      selector: a[href^="details.php?id="] > b
     title_multilanguage:
       text: "{{ .Result.title_phase1 }}"
       filters:
@@ -225,8 +222,10 @@ search:
           args: [ "(?i)[\\.\\s\\[\\-]vostfr[\\.\\s\\]\\-]", ".{{ .Config.subfrench }}." ]
         - name: re_replace
           args: [ "(?i)[\\.\\s\\[\\-]subfrench[\\.\\s\\]\\-]", ".{{ .Config.subfrench }}." ]
-    title:
+    title_phase3:
       text: "{{ if .Config.subfrench }}{{ .Result.title_vostfr }}{{ else }}{{ .Result.title_phase2 }}{{ end }}"
+    title:
+      text: "{{ .Result.title_phase3 }}"
     download:
       selector: a[href^="download.php?torrent="]
       attribute: href
@@ -239,14 +238,14 @@ search:
         - name: replace
           args: [ "io", "B" ]
     grabs:
-      selector: a[href=^"gang.php?tid="]
+      selector: a[href^="gang.php?tid="]
     seeders:
-      selector: a[href^="peerlist_xbt.php?id="]
+      selector: a[href^="peerlist_xbt.php?id="] > font[style="color:#04B404;"]
     leechers:
-      selector: font[style="color:#2E64FE;"]
+      selector: a[href^="peerlist_xbt.php?id="] > font[style="color:#2E64FE;"]
     downloadvolumefactor:
       case:
-        img[src="./pic/freedownload.gif"]: 0
+        img[title="Free Torrent"]: 0
         "*": 1
     uploadvolumefactor:
       case:
